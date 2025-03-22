@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora com Histórico</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f0f8ff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        
+        .calculator-container {
+            display: flex;
+            width: 90%;
+            max-width: 900px;
+            height: 550px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            border-radius: 15px;
+            overflow: hidden;
+        }
+        
+        .calculator {
+            flex: 1;
+            background-color: white;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .history {
+            width: 300px;
+            background-color: #1e90ff;
+            color: white;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        
+        .history h2 {
+            color: white;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+            padding-bottom: 10px;
+        }
+        
+        .display {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: right;
+            font-size: 2.4rem;
+            margin-bottom: 20px;
+            flex: 0 0 auto;
+            position: relative;
+            overflow: hidden;
+            height: 80px;
+        }
+        
+        .previous-operation {
+            position: absolute;
+            top: 5px;
+            right: 15px;
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+        
+        .current-operation {
+            font-size: 2.4rem;
+            color: #212529;
+        }
+        
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-gap: 10px;
+            flex: 1;
+        }
+        
+        button {
+            border: none;
+            border-radius: 8px;
+            font-size: 1.3rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        button:hover {
+            filter: brightness(0.9);
+        }
+        
+        button:active {
+            transform: scale(0.97);
+        }
+        
+        .number {
+            background-color: white;
+            color: #333;
+            border: 1px solid #dee2e6;
+        }
+        
+        .operation {
+            background-color: #e9ecef;
+            color: #1e90ff;
+            font-weight: bold;
+        }
+        
+        .equals {
+            background-color: #1e90ff;
+            color: white;
+            grid-row: span 2;
+        }
+        
+        .clear, .delete {
+            background-color: #ff6b6b;
+            color: white;
+        }
+        
+        .history-item {
+            padding: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .history-item:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .history-item .calculation {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+        
+        .history-item .result {
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+        
+        .clear-history {
+            background-color: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 8px 15px;
+            margin-top: 15px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            width: 100%;
+        }
+        
+        .clear-history:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+        
+        @media (max-width: 768px) {
+            .calculator-container {
+                flex-direction: column;
+                height: auto;
+            }
+            
+            .history {
+                width: 100%;
+                max-height: 200px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator-container">
+        <div class="calculator">
+            <h2>Calculadora</h2>
+            <div class="display">
+                <div class="previous-operation"></div>
+                <div class="current-operation">0</div>
+            </div>
+            <div class="buttons">
+                <button class="operation" data-operation="(">(</button>
+                <button class="operation" data-operation=")">)</button>
+                <button class="clear" data-action="clear">C</button>
+                <button class="delete" data-action="delete">⌫</button>
+                
+                <button class="number" data-number="7">7</button>
+                <button class="number" data-number="8">8</button>
+                <button class="number" data-number="9">9</button>
+                <button class="operation" data-operation="/">÷</button>
+                
+                <button class="number" data-number="4">4</button>
+                <button class="number" data-number="5">5</button>
+                <button class="number" data-number="6">6</button>
+                <button class="operation" data-operation="*">×</button>
+                
+                <button class="number" data-number="1">1</button>
+                <button class="number" data-number="2">2</button>
+                <button class="number" data-number="3">3</button>
+                <button class="operation" data-operation="-">−</button>
+                
+                <button class="number" data-number="0">0</button>
+                <button class="number" data-number=".">.</button>
+                <button class="operation" data-operation="+">+</button>
+                <button class="equals" data-action="calculate">=</button>
+            </div>
+        </div>
+        
+        <div class="history">
+            <h2>Histórico</h2>
+            <div class="history-list">
+                <!-- Histórico será adicionado aqui via JavaScript -->
+            </div>
+            <button class="clear-history">Limpar Histórico</button>
+        </div>
+    </div>
+
+    <script>
+        class Calculator {
+            constructor() {
+                this.previousOperationText = document.querySelector('.previous-operation');
+                this.currentOperationText = document.querySelector('.current-operation');
+                this.historyList = document.querySelector('.history-list');
+                this.clearHistoryBtn = document.querySelector('.clear-history');
+                
+                this.currentOperation = '0';
+                this.previousOperation = '';
+                this.operation = undefined;
+                this.history = this.loadHistory();
+                
+                this.bindEvents();
+                this.updateDisplay();
+                this.displayHistory();
+            }
+            
+            bindEvents() {
+                document.querySelectorAll('.number').forEach(button => {
+                    button.addEventListener('click', () => {
+                        this.appendNumber(button.dataset.number);
+                    });
+                });
+                
+                document.querySelectorAll('.operation').forEach(button => {
+                    button.addEventListener('click', () => {
+                        this.chooseOperation(button.dataset.operation);
+                    });
+                });
+                
+                document.querySelector('[data-action="calculate"]').addEventListener('click', () => {
+                    this.calculate();
+                });
+                
+                document.querySelector('[data-action="clear"]').addEventListener('click', () => {
+                    this.clear();
+                });
+                
+                document.querySelector('[data-action="delete"]').addEventListener('click', () => {
+                    this.delete();
+                });
+                
+                this.clearHistoryBtn.addEventListener('click', () => {
+                    this.clearHistory();
+                });
+                
+                // Adicionar suporte a teclado
+                document.addEventListener('keydown', (e) => {
+                    if (/\d|\./.test(e.key)) {
+                        this.appendNumber(e.key);
+                    } else if (['+', '-', '*', '/'].includes(e.key)) {
+                        this.chooseOperation(e.key);
+                    } else if (e.key === 'Enter' || e.key === '=') {
+                        e.preventDefault();
+                        this.calculate();
+                    } else if (e.key === 'Backspace') {
+                        this.delete();
+                    } else if (e.key === 'Escape') {
+                        this.clear();
+                    } else if (e.key === '(' || e.key === ')') {
+                        this.chooseOperation(e.key);
+                    }
+                });
+            }
+            
+            appendNumber(number) {
+                if (number === '.' && this.currentOperation.includes('.')) return;
+                
+                if (this.currentOperation === '0' && number !== '.') {
+                    this.currentOperation = number;
+                } else {
+                    this.currentOperation += number;
+                }
+                
+                this.updateDisplay();
+            }
+            
+            chooseOperation(operation) {
+                if (this.currentOperation === '') return;
+                
+                this.currentOperation += operation;
+                this.updateDisplay();
+            }
+            
+            calculate() {
+                let computation;
+                const expression = this.currentOperation;
+                
+                try {
+                    // Usando Function para calcular a expressão de forma segura
+                    computation = new Function(`return ${expression.replace(/×/g, '*').replace(/÷/g, '/')}`)();
+                    
+                    if (!isFinite(computation)) {
+                        throw new Error('Resultado inválido');
+                    }
+                    
+                    // Adicionar ao histórico
+                    this.addToHistory(expression, computation);
+                    
+                    // Atualizar operação atual com o resultado
+                    this.previousOperation = expression;
+                    this.currentOperation = computation.toString();
+                } catch (error) {
+                    this.currentOperation = 'Erro';
+                }
+                
+                this.updateDisplay();
+            }
+            
+            addToHistory(expression, result) {
+                const item = {
+                    expression: expression,
+                    result: result,
+                    timestamp: new Date().toISOString()
+                };
+                
+                this.history.unshift(item);
+                
+                // Limitando a 20 itens para não sobrecarregar o localStorage
+                if (this.history.length > 20) {
+                    this.history.pop();
+                }
+                
+                this.saveHistory();
+                this.displayHistory();
+            }
+            
+            displayHistory() {
+                this.historyList.innerHTML = '';
+                
+                this.history.forEach(item => {
+                    const historyItem = document.createElement('div');
+                    historyItem.classList.add('history-item');
+                    
+                    const calculation = document.createElement('div');
+                    calculation.classList.add('calculation');
+                    calculation.textContent = item.expression;
+                    
+                    const result = document.createElement('div');
+                    result.classList.add('result');
+                    result.textContent = `= ${item.result}`;
+                    
+                    historyItem.appendChild(calculation);
+                    historyItem.appendChild(result);
+                    
+                    // Adicionar evento para clicar em um item do histórico
+                    historyItem.addEventListener('click', () => {
+                        this.currentOperation = item.result.toString();
+                        this.updateDisplay();
+                    });
+                    
+                    this.historyList.appendChild(historyItem);
+                });
+            }
+            
+            clear() {
+                this.currentOperation = '0';
+                this.previousOperation = '';
+                this.operation = undefined;
+                this.updateDisplay();
+            }
+            
+            delete() {
+                if (this.currentOperation === 'Erro' || this.currentOperation === '0') {
+                    this.currentOperation = '0';
+                } else {
+                    this.currentOperation = this.currentOperation.toString().slice(0, -1);
+                    if (this.currentOperation === '') {
+                        this.currentOperation = '0';
+                    }
+                }
+                this.updateDisplay();
+            }
+            
+            updateDisplay() {
+                this.currentOperationText.textContent = this.currentOperation;
+                this.previousOperationText.textContent = this.previousOperation;
+            }
+            
+            saveHistory() {
+                localStorage.setItem('calculatorHistory', JSON.stringify(this.history));
+            }
+            
+            loadHistory() {
+                const savedHistory = localStorage.getItem('calculatorHistory');
+                return savedHistory ? JSON.parse(savedHistory) : [];
+            }
+            
+            clearHistory() {
+                this.history = [];
+                this.saveHistory();
+                this.displayHistory();
+            }
+        }
+        
+        // Iniciar calculadora quando o DOM estiver carregado
+        document.addEventListener('DOMContentLoaded', () => {
+            new Calculator();
+        });
+    </script>
+</body>
+</html>
